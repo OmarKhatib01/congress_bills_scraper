@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 
-
 dict1 = {
     77: [1941, 1942],
     78: [1943, 1944],
@@ -44,9 +43,10 @@ dict1 = {
     115: [2017, 2018],
     116: [2019, 2020],
     117: [2021, 2022]
-    }
+}
 
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+# progress bar function
+def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -62,47 +62,36 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end="\r")
     # Print New Line on Complete
     if iteration == total:
         print()
 
-printProgressBar(0, len(dict1), prefix = 'Progress:', suffix = 'Complete')
-
-# senate bills
+# scrape csv's
 for key in dict.keys(dict1):
     for year in dict1[key]:
-        printProgressBar(year, 2*len(dict1), prefix = 'Progress:', suffix = 'Complete')
         for bill_num in range(1, 2000):
-            url = 'https://www.govtrack.us/congress/votes/' + str(key) + '-' + str(year) + '/s' + str(bill_num)\
-                  + '/export/csv'
-            page = requests.get(url)
-            url_soup = BeautifulSoup(page.content, 'html.parser')
-            r = requests.head(url)
-            if "text/html" in r.headers["content-type"]:
+            printProgressBar(bill_num, 2000, prefix=year, printEnd="\r\n")
+            url_s = 'https://www.govtrack.us/congress/votes/' + str(key) + '-' + str(year) + '/s' + str(bill_num) \
+                    + '/export/csv'
+            r_s = requests.head(url_s)
+
+            url_h = 'https://www.govtrack.us/congress/votes/' + str(key) + '-' + str(year) + '/h' + str(bill_num) \
+                    + '/export/csv'
+            r_h = requests.head(url_h)
+
+            if "text/html" in r_s.headers["content-type"]:
                 continue
             else:
-                r = requests.get(url, allow_redirects=True)
+                r_s = requests.get(url_s, allow_redirects=True)
                 open('./csv_senate/congress_votes_' + str(key) + '-' + str(year) + '_s' + str(bill_num) +
-                     '.csv', 'wb').write(r.content)
+                     '.csv', 'wb').write(r_s.content)
 
-# house bills
-for key in dict.keys(dict1):
-    for year in dict1[key]:
-        printProgressBar(year, 2*len(dict1), prefix = 'Progress:', suffix = 'Complete')
-        for bill_num in range(1, 2000):
-            url = 'https://www.govtrack.us/congress/votes/' + str(key) + '-' + str(year) + '/h' + str(bill_num)\
-                  + '/export/csv'
-            page = requests.get(url)
-            url_soup = BeautifulSoup(page.content, 'html.parser')
-            r = requests.head(url)
-            if "text/html" in r.headers["content-type"]:
+            if "text/html" in r_h.headers["content-type"]:
                 continue
             else:
-                r = requests.get(url, allow_redirects=True)
+                r_h = requests.get(url_h, allow_redirects=True)
                 open('./csv_house/congress_votes_' + str(key) + '-' + str(year) + '_h' + str(bill_num) +
-                     '.csv', 'wb').write(r.content)
-
-
+                     '.csv', 'wb').write(r_h.content)
 
 
